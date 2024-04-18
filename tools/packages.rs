@@ -9,7 +9,7 @@ use super::{
 use crate::package_data::PackageData;
 
 pub fn search_package(name: &str) -> Result<PackageData, Box<dyn Error>> {
-    let repo_dir = fs::read_dir(format!("{}/sources/repositories", paths::get_root_path()))?;
+    let repo_dir = fs::read_dir(format!("{}/.dupt/sources/repositories", paths::get_root_path()))?;
     for i in repo_dir {
         let entry = i.unwrap();
         let file = fs::File::open(entry.path())?;
@@ -117,7 +117,7 @@ pub fn get_file(
 pub fn get_repos() -> collections::HashMap<String, String> {
     let mut repos: collections::HashMap<String, String> = collections::HashMap::new();
     let source_file =
-        fs::read_to_string(format!("{}/sources/sources.conf", get_root_path())).unwrap();
+        fs::read_to_string(format!("{}/.dupt/sources/sources.conf", get_root_path())).unwrap();
     for i in source_file.lines() {
         if i.trim().is_empty() {
             continue;

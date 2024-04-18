@@ -46,20 +46,21 @@ pub fn check_toolbox_env() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn make_dupt_folder() -> Result<(), Box<dyn Error>> {
-    let config_file = fs::read_to_string(format!("{}/configs/configs.conf", paths::get_root_path()))?;
+    println!("{}", format!("{}/.dupt/configs/configs.conf", paths::get_root_path()));
+    let config_file = fs::read_to_string(format!("{}/.dupt/configs/configs.conf", paths::get_root_path()))?;
 
     if env::consts::OS == "linux" {
         println!("chowning");
         let _chown = process::Command::new("chmod")
             .arg("+x")
-            .arg(format!("{}/scripts/*", paths::get_root_path()));
+            .arg(format!("{}/.dupt/scripts/*", paths::get_root_path()));
     }
 
     println!("checking presence of project root");
 
     run_distrobox_command(
         &format!(
-            "sh {}/scripts/mkdupt.sh {}",
+            "sh {}/.dupt/scripts/mkdupt.sh {}",
             paths::get_root_path(),
             paths::get_root_path()
         ),
