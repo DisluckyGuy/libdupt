@@ -1,9 +1,14 @@
-use std::{env, fs, process::exit};
+use std::{
+    env,
+    fs,
+    process::{exit},
+};
 
 use crate::tools::{
-    self, containers,
     packages::{self, search_package},
-    paths, terminal,
+    paths,
+    system::{self, get_package_manager},
+    terminal,
 };
 
 use super::Command;
@@ -12,8 +17,7 @@ pub struct Install {
     pub confirm: bool,
 }
 
-impl Command for Install {
-}
+impl Command for Install {}
 
 impl Default for Install {
     fn default() -> Self {
@@ -32,10 +36,7 @@ impl Install {
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-
-        containers::check_toolbox_env()?;
-
-        containers::make_dupt_folder()?;
+        system::make_dupt_folder()?;
 
         for name in &self.names {
             if packages::search_installed(name).is_ok() {
@@ -97,13 +98,9 @@ impl Install {
 
             let pkginfo = search_package(name)?;
 
-            let mut command = pkginfo.make_dependencies.join(" ");
+            terminal::print_blue("installing dependencies");
 
-            terminal::print_blue("installing make dependencies");
-
-            println!("sudo dnf install {} -y", command);
-
-            containers::run_distrobox_command(&format!("sudo dnf install {} -y", command), true)?;
+            system::install_system_packages(pkginfo.dependencies, get_package_manager())?;
 
             env::set_current_dir(format!(
                 "{}/.dupt/archives/{}/control",
@@ -114,50 +111,20 @@ impl Install {
             println!();
             println!("running preinstall configurations");
 
-            containers::run_distrobox_command(
-                &format!("sh preinst.sh {}", paths::get_root_path()),
-                true,
-            )?;
+            system::run_system_command("sh ./preinst.sh", true)?;
 
             println!();
             terminal::print_blue("building..");
 
-            containers::run_distrobox_command(
-                &format!("sh build.sh {}", paths::get_root_path()),
-                true,
-            )?;
-
-            terminal::print_blue("removing make dependencies");
-
-            containers::run_distrobox_command(&format!("sudo dnf remove {} -y", command), true)?;
-
-            command.clear();
-
-            command = pkginfo.dependencies.join(" ").to_string();
-
-            terminal::print_blue("installing dependencies");
-
-            tools::containers::run_distrobox_command(
-                &format!("sudo dnf install {} -y", command),
-                true,
-            )?;
+            system::run_system_command("sh ./build.sh", true)?;
 
             println!();
             println!("running post configurations");
 
-            containers::run_distrobox_command(
-                &format!("sh preinst.sh {}", paths::get_root_path()),
-                true,
-            )?;
+            system::run_system_command("sh ./postinst.sh", true)?;
 
-            containers::run_distrobox_command(
-                &format!(
-                    "cp {0}/.dupt/archives/{1}/PKGINFO.json {0}/.dupt/installed/{1}",
-                    paths::get_root_path(),
-                    name
-                ),
-                false,
-            )?;
+            system::run_system_command(&format!("cp {0}/.dupt/archives/{1}/PKGINFO.json {0}/.dupt/installed/{1}", paths::get_root_path(), name), true)?;
+
         }
 
         println!("cleaning archives");
@@ -172,8 +139,6 @@ impl Install {
 
     pub fn from_args(args: &Vec<String>) -> Result<Self, Box<dyn std::error::Error>> {
         let mut command = Install::default();
-
-
 
         if args.len() == 0 {
             command.help();

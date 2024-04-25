@@ -1,6 +1,6 @@
 use std::{fs, process::exit};
 
-use crate::tools::{containers, packages, paths, terminal};
+use crate::tools::{system, packages, paths, terminal};
 
 use super::Command;
 
@@ -28,11 +28,7 @@ impl Remove {
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
 
-        containers::make_dupt_folder()?;
-
-        if self.names.contains(&"help".to_string())  {
-            self.help();
-        }
+        system::make_dupt_folder()?;
 
         for name in &self.names {
             packages::search_installed(name)?;
@@ -61,10 +57,6 @@ impl Remove {
 
             fs::remove_dir_all(format!("{}/.dupt/bin/{}", paths::get_root_path(), name))?;
 
-            let unused_dep = packages::get_unused_dependencies(&name)?;
-            let unused_str = &unused_dep.join(" ");
-
-            containers::run_distrobox_command(&format!("sudo dnf remove {} -y", unused_str), true)?;
             fs::remove_file(format!("{}/.dupt/installed/{}", paths::get_root_path(), name))?;
         }
         

@@ -3,13 +3,15 @@ use std::{
 };
 
 use super::{
-    containers,
+    system,
     paths::{self, get_root_path},
 };
 use crate::package_data::PackageData;
 
 pub fn search_package(name: &str) -> Result<PackageData, Box<dyn Error>> {
-    let repo_dir = fs::read_dir(format!("{}/.dupt/sources/repositories", paths::get_root_path()))?;
+    println!("checking dir");
+    let path = paths::get_root_path();
+    let repo_dir = fs::read_dir(format!("{}/.dupt/sources/repositories", path))?;
     for i in repo_dir {
         let entry = i.unwrap();
         let file = fs::File::open(entry.path())?;
@@ -57,7 +59,7 @@ pub fn get_dependency_count() -> collections::HashMap<String, i32> {
 }
 
 pub fn clear_archives(name: &String) -> Result<(), Box<dyn Error>> {
-    containers::run_distrobox_command(
+    system::run_system_command(
         &format!(
             "rm {0}/.dupt/archives/{1}.tar.gz {0}/.dupt/archives/{1} -r",
             paths::get_root_path(),

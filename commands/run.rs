@@ -1,6 +1,6 @@
 use std::process::{self, exit};
 
-use crate::tools::{containers, packages::search_installed, paths};
+use crate::{package_data, tools::{packages::{self, search_installed}, paths::{self, get_root_path}, system}};
 
 use super::Command;
 
@@ -26,23 +26,15 @@ impl Run {
         println!("run installed software");
     }
 
+
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
 
-        containers::check_toolbox_env()?;
-        containers::make_dupt_folder()?;
+        system::make_dupt_folder()?;
 
-        let exec_path = search_installed(&self.name)?.exec_dir;
-
-        let exec = exec_path.rsplit_once("/").unwrap(); 
-
-        let _run = process::Command::new("distrobox")
-            .current_dir(format!("{}/.dupt/bin/{}/{}", paths::get_root_path(), self.name, exec.0))
-            .arg("enter")
-            .arg("dupt-fedora")
-            .arg("--")
-            .arg(format!("./{}", exec.1))
-            .spawn()?
-            .wait()?;
+        let package = packages::search_installed(&self.name)?;
+        
+        std::env::set_current_dir(&format!("{}/.dupt/bin/{}", get_root_path(), package.package_name))?;
+        system::run_system_command("sh -c ./run.sh", true)?;
         Ok(())
     }
 

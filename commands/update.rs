@@ -1,6 +1,6 @@
 use std::{fs, process::exit};
 
-use crate::tools::{containers, packages::{self, get_file}, paths::get_root_path};
+use crate::tools::{system, packages::{self, get_file}, paths::get_root_path};
 
 use super::Command;
 
@@ -23,8 +23,7 @@ impl Update {
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        containers::check_toolbox_env()?;
-        containers::make_dupt_folder()?;
+        system::make_dupt_folder()?;
 
         let repositories = packages::get_repos();
         let repo_dir = fs::read_dir(format!("{}/.dupt/sources/repositories", get_root_path()))?;
