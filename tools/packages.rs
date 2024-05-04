@@ -51,19 +51,16 @@ pub fn get_upgradable_packages() -> Vec<PackageData> {
     for i in 0..current_pkgs.len(){
 
         for j in  0..all_pkgs.len() {
-            println!("{}, {}", current_pkgs[i].package_name, all_pkgs[j].package_name);
             if current_pkgs[i].package_name == all_pkgs[j].package_name {
                 repo_pkgs.push(all_pkgs[j].clone());
             }
         }
         
     }
-    println!("{}", repo_pkgs.len());
     for i in 0..repo_pkgs.len() {
         let current_version: Vec<&str> = current_pkgs[i].version.split(".").collect();
         let repo_version: Vec<&str> = repo_pkgs[i].version.split(".").collect();
 
-        println!("{:?}, {:?}", current_version, repo_version);
 
         if repo_version == current_version {
             continue;
@@ -80,8 +77,6 @@ pub fn get_upgradable_packages() -> Vec<PackageData> {
 
         if repo_version.len() > current_version.len() {
             let split_version = repo_version.split_at(current_version.len()).0.to_vec();
-
-            println!("{:?}", split_version);
 
             if split_version == current_version {
                 packages.push(repo_pkgs[i].clone());

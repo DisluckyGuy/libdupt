@@ -4,8 +4,8 @@ use crate::tools::{self, packages::{self, get_file}, paths::get_root_path, syste
 
 use super::{install::{self, Install}, remove::Remove};
 
-struct Upgrade {
-    confirm: bool,
+pub struct Upgrade {
+    pub confirm: bool,
 }
 
 impl Default for Upgrade {
@@ -46,7 +46,9 @@ impl Upgrade {
         }
         println!();
         if self.confirm {
-            confirm("do you want to continue[y/n]?: ")?;
+            if !confirm("do you want to continue[y/n]?: ")? {
+                exit(0);
+            };
             println!()
         }
         
@@ -67,6 +69,7 @@ impl Upgrade {
         if args.is_empty() {
             return Ok(command);
         }
+        command.confirm = true;
         if args.last().expect("no last argument") == "-y" {
             command.confirm = false;
         }

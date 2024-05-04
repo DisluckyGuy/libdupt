@@ -1,7 +1,5 @@
 use std::{fs, process::exit};
 
-use gtk::glib::clone::Upgrade;
-
 use crate::tools::{system, packages::{self, get_file}, paths::get_root_path};
 
 use super::Command;

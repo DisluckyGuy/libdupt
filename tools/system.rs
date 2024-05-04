@@ -20,8 +20,6 @@ pub fn make_dupt_folder() -> Result<(), Box<dyn Error>> {
             .arg(format!("{}/.dupt/scripts/*", paths::get_root_path()));
     }
 
-    println!("checking presence of project root");
-    println!("{}", format!("{}/.dupt/scripts/mkdupt.sh", paths::get_root_path()));
     run_system_command(
         &format!(
             "sh {}/.dupt/scripts/mkdupt.sh {}",
