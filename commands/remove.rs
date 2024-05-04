@@ -31,6 +31,7 @@ impl Remove {
         system::make_dupt_folder()?;
 
         for name in &self.names {
+        println!("{}", name);
             packages::search_installed(name)?;
         }
 
@@ -59,8 +60,8 @@ impl Remove {
 
             fs::remove_file(format!("{}/.dupt/installed/{}", paths::get_root_path(), name))?;
         }
-        
-        
+
+
 
         terminal::print_green("removed succesfully!");
 
@@ -70,19 +71,26 @@ impl Remove {
     pub fn from_args(args: &Vec<String>) -> Result<Self, Box<dyn std::error::Error>> {
         let mut command = Remove::default();
 
-        
         if args.len() == 0 {
             command.help();
-            return Err("not enough arguments")?;
+            return Err("Not enough arguments")?;
         }
 
-        if args[args.len() - 1] != "-y" {
-            command.names = args[0..args.len()].to_vec();
-            return Ok(command);
+        if args.last().unwrap() == "-y" {
+            command.confirm = false;
         }
 
-        command.confirm = false;
-        command.names = args[0..args.len()].to_vec();
+        if args.len() == 1 && command.confirm == false {
+            command.help();
+            return Err("Not enough arguments")?;
+        }
+
+        if !command.confirm {
+            command.names = args[0..args.len() - 1].to_vec();
+        } else {
+            command.names = args.to_vec();
+        }
+
         if command.names.contains(&"help".to_string()) {
             command.help();
             exit(0);

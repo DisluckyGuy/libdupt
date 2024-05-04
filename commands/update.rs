@@ -1,11 +1,12 @@
 use std::{fs, process::exit};
 
+use gtk::glib::clone::Upgrade;
+
 use crate::tools::{system, packages::{self, get_file}, paths::get_root_path};
 
 use super::Command;
 
 pub struct Update {
-    confirm: bool
 }
  impl Command for Update {
 
@@ -13,7 +14,7 @@ pub struct Update {
 
  impl Default for Update {
     fn default() -> Self {
-        Self { confirm: true }
+        return Update {};
     }
  }
 
@@ -37,13 +38,9 @@ impl Update {
     }
 
     pub fn from_args(args: &Vec<String>) -> Result<Self, Box<dyn std::error::Error>> {
-        let mut command = Self::default();
-        command.confirm = true;
+        let command = Self::default();
         if args.is_empty() {
             return Ok(command);
-        }
-        if args.last().unwrap() == "-y" {
-            command.confirm = true;
         }
         if args.contains(&"help".to_string()) {
             command.help();

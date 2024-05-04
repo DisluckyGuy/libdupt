@@ -1,5 +1,5 @@
 use std::{
-    collections, error::Error, fs::{self, File}, io::BufReader, process
+    collections, error::Error, fs::{self, File}, io::BufReader, process, cmp
 };
 
 use super::{
@@ -31,6 +31,7 @@ pub fn search_installed(name: &str) -> Result<PackageData, Box<dyn Error>> {
     let entries = fs::read_dir(&format!("{}/.dupt/installed", paths::get_root_path()))?;
     for i in entries {
         let entry = i.unwrap();
+            println!("{}", entry.file_name().to_str().unwrap());
         if entry.file_name() == name.trim() {
             let file = File::open(entry.path())?;
             let reader = BufReader::new(file);
@@ -41,6 +42,118 @@ pub fn search_installed(name: &str) -> Result<PackageData, Box<dyn Error>> {
 
     Err("Package not found")?
 }
+
+pub fn get_upgradable_packages() -> Vec<PackageData> {
+    let mut packages: Vec<PackageData> = Vec::new();
+    let current_pkgs = get_installed_packages();
+    let mut repo_pkgs: Vec<PackageData> = Vec::new();
+    let all_pkgs = get_packages();
+    for i in 0..current_pkgs.len(){
+
+        for j in  0..all_pkgs.len() {
+            println!("{}, {}", current_pkgs[i].package_name, all_pkgs[j].package_name);
+            if current_pkgs[i].package_name == all_pkgs[j].package_name {
+                repo_pkgs.push(all_pkgs[j].clone());
+            }
+        }
+        
+    }
+    println!("{}", repo_pkgs.len());
+    for i in 0..repo_pkgs.len() {
+        let current_version: Vec<&str> = current_pkgs[i].version.split(".").collect();
+        let repo_version: Vec<&str> = repo_pkgs[i].version.split(".").collect();
+
+        println!("{:?}, {:?}", current_version, repo_version);
+
+        if repo_version == current_version {
+            continue;
+        }
+
+        for j in 0..cmp::min(repo_version.len(), current_version.len()){
+            let current_number: i32 = current_version[j].parse().expect("failed to parse");
+            let repo_number: i32 = repo_version[j].parse().expect("failed to parse");
+            if current_number < repo_number {
+                packages.push(repo_pkgs[i].clone());
+                break;
+            }
+        }
+
+        if repo_version.len() > current_version.len() {
+            let split_version = repo_version.split_at(current_version.len()).0.to_vec();
+
+            println!("{:?}", split_version);
+
+            if split_version == current_version {
+                packages.push(repo_pkgs[i].clone());
+                break;
+            }
+
+        }
+
+    }
+
+    packages
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    pub fn get_upgradable_packages(){
+        let mut packages: Vec<PackageData> = Vec::new();
+        let current_pkgs = get_installed_packages();
+        let mut repo_pkgs: Vec<PackageData> = Vec::new();
+        let all_pkgs = get_packages();
+        for i in 0..current_pkgs.len(){
+
+            for j in  0..all_pkgs.len() {
+                println!("{}, {}", current_pkgs[i].package_name, all_pkgs[j].package_name);
+                if current_pkgs[i].package_name == all_pkgs[j].package_name {
+                    repo_pkgs.push(all_pkgs[j].clone());
+                }
+            }
+            
+        }
+        println!("{}", repo_pkgs.len());
+        for i in 0..repo_pkgs.len() {
+            let current_version: Vec<&str> = current_pkgs[i].version.split(".").collect();
+            let repo_version: Vec<&str> = repo_pkgs[i].version.split(".").collect();
+
+            println!("{:?}, {:?}", current_version, repo_version);
+
+            if repo_version == current_version {
+                continue;
+            }
+
+            for j in 0..cmp::min(repo_version.len(), current_version.len()){
+                let current_number: i32 = current_version[j].parse().expect("failed to parse");
+                let repo_number: i32 = repo_version[j].parse().expect("failed to parse");
+                if current_number < repo_number {
+                    packages.push(repo_pkgs[i].clone());
+                    break;
+                }
+            }
+
+            if repo_version.len() > current_version.len() {
+                let split_version = repo_version.split_at(current_version.len()).0.to_vec();
+
+                println!("{:?}", split_version);
+
+                if split_version == current_version {
+                    packages.push(repo_pkgs[i].clone());
+                    break;
+                }
+
+            }
+
+        }
+
+        println!("{:#?}", packages)
+    }
+}
+    
+
 
 pub fn get_dependency_count() -> collections::HashMap<String, i32> {
     let mut dependency_list: collections::HashMap<String, i32> = collections::HashMap::new();
