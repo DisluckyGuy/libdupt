@@ -55,7 +55,7 @@ pub fn get_upgradable_packages() -> Vec<PackageData> {
                 repo_pkgs.push(all_pkgs[j].clone());
             }
         }
-        
+
     }
     for i in 0..repo_pkgs.len() {
         let current_version: Vec<&str> = current_pkgs[i].version.split(".").collect();
@@ -108,7 +108,7 @@ mod tests {
                     repo_pkgs.push(all_pkgs[j].clone());
                 }
             }
-            
+
         }
         println!("{}", repo_pkgs.len());
         for i in 0..repo_pkgs.len() {
@@ -147,7 +147,7 @@ mod tests {
         println!("{:#?}", packages)
     }
 }
-    
+
 
 
 pub fn get_dependency_count() -> collections::HashMap<String, i32> {
@@ -173,7 +173,7 @@ pub fn clear_archives(name: &String) -> Result<(), Box<dyn Error>> {
             paths::get_root_path(),
             name
         ),
-        false,
+        true,
     )?;
     Ok(())
 }

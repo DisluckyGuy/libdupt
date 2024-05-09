@@ -1,5 +1,5 @@
 use std::{env, error::Error, process::{self, exit}};
-
+use std::fs;
 
 
 use crate::tools::paths;
@@ -13,21 +13,19 @@ pub enum PackageManager {
 }
 pub fn make_dupt_folder() -> Result<(), Box<dyn Error>> {
 
-    if env::consts::OS == "linux" {
-        println!("chowning");
-        let _chown = process::Command::new("chmod")
-            .arg("+x")
-            .arg(format!("{}/.dupt/scripts/*", paths::get_root_path()));
-    }
+    fs::create_dir(format!("{}/.dupt", paths::get_root_path())).ok();
+    fs::create_dir(format!("{}/.dupt/archives", paths::get_root_path())).ok();
+    fs::create_dir(format!("{}/.dupt/bin", paths::get_root_path())).ok();
+    fs::create_dir(format!("{}/.dupt/installed", paths::get_root_path())).ok();
+    fs::create_dir(format!("{}/.dupt/sources", paths::get_root_path())).ok();
+    fs::File::create(format!("{}/.dupt/sources/sources.conf", paths::get_root_path())).expect("failed to create config file");
+    fs::create_dir(format!("{}/.dupt/sources/repositories", paths::get_root_path())).ok();
 
-    run_system_command(
-        &format!(
-            "sh {}/.dupt/scripts/mkdupt.sh {}",
-            paths::get_root_path(),
-            paths::get_root_path()
-        ),
-        false,
-    )?;
+    let sources = fs::read_to_string(format!("{}/.dupt/sources/sources.conf", paths::get_root_path())).expect("failed to read");
+
+    if sources.trim().is_empty() {
+        fs::write(format!("{}/.dupt/sources/sources.conf", paths::get_root_path()), "dupt-repo-main: https://gitlab.com/api/v4/projects/56369537/repository/files/||/raw?").expect("failed to write");
+    }
     Ok(())
 }
 

@@ -72,6 +72,19 @@ impl Install {
             }
         }
 
+        terminal::print_blue("installing dependencies");
+
+        let mut dependencies: Vec<String> = Vec::new();
+
+
+
+        for name in &self.names {
+            let mut pkginfo = search_package(&name)?;
+            dependencies.append(&mut pkginfo.dependencies);
+        }
+
+        system::install_system_packages(dependencies, get_package_manager())?;
+
         for name in &self.names {
             env::set_current_dir(format!("{}/.dupt", paths::get_root_path()))?;
 
@@ -96,11 +109,6 @@ impl Install {
             println!("unpacking");
             archive.unpack(format!("{}/.dupt/archives", paths::get_root_path()))?;
 
-            let pkginfo = search_package(name)?;
-
-            terminal::print_blue("installing dependencies");
-
-            system::install_system_packages(pkginfo.dependencies, get_package_manager())?;
 
             env::set_current_dir(format!(
                 "{}/.dupt/archives/{}/control",

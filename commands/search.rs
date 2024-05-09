@@ -1,6 +1,8 @@
 use ansi_term::Color;
 
 use crate::{package_data::PackageData, tools::paths};
+use crate::tools::system;
+
 use std::{error::Error, fs, process::exit};
 pub struct Search {
     pub name: String,
@@ -43,6 +45,9 @@ pub fn from_args(args: &Vec<String>) -> Result<Self, Box<dyn std::error::Error>>
 }
 
 pub fn run(&self) -> Result<Vec<PackageData>, Box<dyn Error>> {
+
+    system::make_dupt_folder()?;
+
     let list_dir = fs::read_dir(format!("{}/.dupt/sources/repositories", paths::get_root_path()))?;
     let mut packages: Vec<PackageData> = Vec::new();
     for i in list_dir {

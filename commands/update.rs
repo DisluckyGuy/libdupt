@@ -26,12 +26,16 @@ impl Update {
 
         let repositories = packages::get_repos();
         let repo_dir = fs::read_dir(format!("{}/.dupt/sources/repositories", get_root_path()))?;
-        for i in repo_dir {
-            fs::remove_file(i.unwrap().path())?;
-        }
+
+        // for i in repo_dir {
+        //     fs::remove_file(i.unwrap().path())?;
+        // }
         for i in repositories.keys() {
             get_file(&"list.conf".to_string(), &format!("{}.json", i), i.as_str(), format!("{}/.dupt/sources/repositories", get_root_path()))?;
         }
+
+
+
         Ok(())
     }
 
