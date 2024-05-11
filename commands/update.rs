@@ -1,6 +1,6 @@
-use std::{fs, process::exit};
+use std::{fs::{self, File}, io::Write, process::exit};
 
-use crate::tools::{system, packages::{self, get_file}, paths::get_root_path};
+use crate::tools::{packages::{self, get_file}, paths::{self, get_root_path}, system};
 
 use super::Command;
 
@@ -25,7 +25,6 @@ impl Update {
         system::make_dupt_folder()?;
 
         let repositories = packages::get_repos();
-        let repo_dir = fs::read_dir(format!("{}/.dupt/sources/repositories", get_root_path()))?;
 
         // for i in repo_dir {
         //     fs::remove_file(i.unwrap().path())?;
@@ -34,7 +33,17 @@ impl Update {
             get_file(&"list.conf".to_string(), &format!("{}.json", i), i.as_str(), format!("{}/.dupt/sources/repositories", get_root_path()))?;
         }
         
-        let easy = curl::easy::Easy::new();
+        let mut easy = curl::easy::Easy::new();
+        easy.url("https://raw.githubusercontent.com/DisluckyGuy/libdupt/main/dependencies.json").expect("failed to fetch");
+        easy.write_function(|data|{
+            let mut dep_file = File::create(format!("{}/.dupt/sources/dependencies.json", paths::get_root_path())).expect("failed to read dependencies");
+            dep_file.write(data).expect("failed to write to dependency file");
+            Ok(data.len())
+        }).expect("failed to write");
+
+        easy.perform().expect("failed to perform");
+
+        
 
 
         Ok(())
