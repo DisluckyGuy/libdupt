@@ -33,7 +33,8 @@ impl Update {
         for i in repositories.keys() {
             get_file(&"list.conf".to_string(), &format!("{}.json", i), i.as_str(), format!("{}/.dupt/sources/repositories", get_root_path()))?;
         }
-
+        
+        let easy = curl::easy::Easy::new();
 
 
         Ok(())

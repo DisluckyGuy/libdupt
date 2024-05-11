@@ -1,0 +1,16 @@
+[
+	{
+		"pacman": "sfml",
+		"apk": "sfml",
+		"dnf": "SFML",
+		"apt": "libsfml-dev",
+		"zypper": "libsfml2-2_6"
+	},
+	{
+		"pacman": "gtkmm-4.0",
+		"apk": "gtkmm4",
+		"dnf": "gtkmm4.0",
+		"apt": "libgtkmm-4.0-0",
+		"zypper": "libgtkmm-4_0-0"
+	}
+]

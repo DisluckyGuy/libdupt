@@ -1,11 +1,11 @@
 use std::{
     env,
     fs,
-    process::{exit},
+    process::exit,
 };
 
 use crate::tools::{
-    packages::{self, search_package},
+    packages::{self, get_system_dependencies, search_package},
     paths,
     system::{self, get_package_manager},
     terminal,
@@ -83,7 +83,9 @@ impl Install {
             dependencies.append(&mut pkginfo.dependencies);
         }
 
-        system::install_system_packages(dependencies, get_package_manager())?;
+        let sys_dependencies = get_system_dependencies(&dependencies);
+
+        system::install_system_packages(sys_dependencies, get_package_manager())?;
 
         for name in &self.names {
             env::set_current_dir(format!("{}/.dupt", paths::get_root_path()))?;

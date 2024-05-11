@@ -2,10 +2,22 @@ use std::{
     collections, error::Error, fs::{self, File}, io::BufReader, process, cmp
 };
 
+use serde::{Deserialize, Serialize};
+
 use super::{
-    system,
-    paths::{self, get_root_path},
+    paths::{self, get_root_path}, system::{self, get_package_manager}
 };
+
+#[derive(Default, Serialize, Deserialize)]
+pub struct Dependency {
+    pacman: String,
+    apk: String,
+    dnf: String,
+    apt: String,
+    zypper: String,
+
+}
+
 use crate::package_data::PackageData;
 
 pub fn search_package(name: &str) -> Result<PackageData, Box<dyn Error>> {
@@ -95,56 +107,30 @@ mod tests {
     use super::*;
 
     #[test]
-    pub fn get_upgradable_packages(){
-        let mut packages: Vec<PackageData> = Vec::new();
-        let current_pkgs = get_installed_packages();
-        let mut repo_pkgs: Vec<PackageData> = Vec::new();
-        let all_pkgs = get_packages();
-        for i in 0..current_pkgs.len(){
-
-            for j in  0..all_pkgs.len() {
-                println!("{}, {}", current_pkgs[i].package_name, all_pkgs[j].package_name);
-                if current_pkgs[i].package_name == all_pkgs[j].package_name {
-                    repo_pkgs.push(all_pkgs[j].clone());
+    pub fn get_system_dependencies() {
+        let names = vec!["SFML".to_string(),"gtkmm4.0".to_string()];
+        let file = File::open(format!("{}/.dupt/sources/dependencies.json", paths::get_root_path())).expect("failed to read dependencies");
+        let reader = BufReader::new(file);
+        let manager = get_package_manager();
+        let all_deps: Vec<Dependency> = serde_json::from_reader(reader).expect("failed to read");
+        let mut deps: Vec<String> = Vec::new();
+        for name in names {
+            for dep in &all_deps {
+                if dep.dnf != name {
+                    continue;
+                }
+                match manager {
+                    system::PackageManager::Dnf => deps.push(dep.dnf.to_string()),
+                    system::PackageManager::Pacman => deps.push(dep.pacman.to_string()),
+                    system::PackageManager::Apt => deps.push(dep.apt.to_string()),
+                    system::PackageManager::Zypper => deps.push(dep.zypper.to_string()),
+                    system::PackageManager::Apk => deps.push(dep.apk.to_string()),
                 }
             }
-
         }
-        println!("{}", repo_pkgs.len());
-        for i in 0..repo_pkgs.len() {
-            let current_version: Vec<&str> = current_pkgs[i].version.split(".").collect();
-            let repo_version: Vec<&str> = repo_pkgs[i].version.split(".").collect();
-
-            println!("{:?}, {:?}", current_version, repo_version);
-
-            if repo_version == current_version {
-                continue;
-            }
-
-            for j in 0..cmp::min(repo_version.len(), current_version.len()){
-                let current_number: i32 = current_version[j].parse().expect("failed to parse");
-                let repo_number: i32 = repo_version[j].parse().expect("failed to parse");
-                if current_number < repo_number {
-                    packages.push(repo_pkgs[i].clone());
-                    break;
-                }
-            }
-
-            if repo_version.len() > current_version.len() {
-                let split_version = repo_version.split_at(current_version.len()).0.to_vec();
-
-                println!("{:?}", split_version);
-
-                if split_version == current_version {
-                    packages.push(repo_pkgs[i].clone());
-                    break;
-                }
-
-            }
-
-        }
-
-        println!("{:#?}", packages)
+    
+        println!("{:#?}", deps);
+    
     }
 }
 
@@ -265,4 +251,33 @@ pub fn get_installed_packages() -> Vec<PackageData> {
         packages.push(package);
     }
     packages
+}
+
+pub fn get_dependencies() { 
+    
+}
+
+pub fn get_system_dependencies(names: &Vec<String>) -> Vec<String> {
+    let file = File::open(format!("{}/.dupt/sources/dependencies.json", paths::get_root_path())).expect("failed to read dependencies");
+    let reader = BufReader::new(file);
+    let manager = get_package_manager();
+    let all_deps: Vec<Dependency> = serde_json::from_reader(reader).expect("failed to read");
+    let mut deps: Vec<String> = Vec::new();
+    for name in names {
+        for dep in &all_deps {
+            if &dep.dnf != name {
+                continue;
+            }
+            match manager {
+                system::PackageManager::Dnf => deps.push(dep.dnf.to_string()),
+                system::PackageManager::Pacman => deps.push(dep.pacman.to_string()),
+                system::PackageManager::Apt => deps.push(dep.apt.to_string()),
+                system::PackageManager::Zypper => deps.push(dep.zypper.to_string()),
+                system::PackageManager::Apk => deps.push(dep.apk.to_string()),
+            }
+        }
+    }
+
+    deps
+
 }

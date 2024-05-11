@@ -91,7 +91,7 @@ pub fn install_system_packages(packages: Vec<String>, manager: PackageManager) -
                 return Ok(());
             },
             PackageManager::Pacman => {
-                let _command = process::Command::new("flatpak-spawn").arg("--host").arg("pkexec").arg("pacman").arg("-S").args(packages).arg("-y").spawn()?.wait()?;
+                let _command = process::Command::new("flatpak-spawn").arg("--host").arg("pkexec").arg("pacman").arg("-S").args(packages).arg("--noconfirm").spawn()?.wait()?;
                 return Ok(());
             },
             PackageManager::Apt => {
@@ -99,11 +99,11 @@ pub fn install_system_packages(packages: Vec<String>, manager: PackageManager) -
                 return Ok(());
             },
             PackageManager::Zypper => {
-                let _command = process::Command::new("flatpak-spawn").arg("--host").arg("pkexec").arg("Zypper").arg("install").args(packages).arg("-y").spawn()?.wait()?;
+                let _command = process::Command::new("flatpak-spawn").arg("--host").arg("pkexec").arg("zypper").arg("install").arg("-y").args(packages).spawn()?.wait()?;
             return Ok(());
             },
             PackageManager::Apk => {
-                let _command = process::Command::new("flatpak-spawn").arg("--host").arg("pkexec").arg("Apk").arg("install").args(packages).arg("-y").spawn()?.wait()?;
+                let _command = process::Command::new("flatpak-spawn").arg("--host").arg("pkexec").arg("apk").arg("install").args(packages).spawn()?.wait()?;
                 return Ok(());
         },
     }
@@ -114,7 +114,7 @@ pub fn install_system_packages(packages: Vec<String>, manager: PackageManager) -
             return Ok(());
         },
         PackageManager::Pacman => {
-            let _command = process::Command::new("sudo").arg("pacman").arg("-S").args(packages).arg("-y").spawn()?.wait()?;
+            let _command = process::Command::new("sudo").arg("pacman").arg("-S").args(packages).arg("--noconfirm").spawn()?.wait()?;
             return Ok(());
         },
         PackageManager::Apt => {
@@ -122,11 +122,11 @@ pub fn install_system_packages(packages: Vec<String>, manager: PackageManager) -
             return Ok(());
         },
         PackageManager::Zypper => {
-            let _command = process::Command::new("sudo").arg("Zypper").arg("install").args(packages).arg("-y").spawn()?.wait()?;
+            let _command = process::Command::new("sudo").arg("zypper").arg("install").arg("-y").args(packages).spawn()?.wait()?;
             return Ok(());
         },
         PackageManager::Apk => {
-            let _command = process::Command::new("sudo").arg("Apk").arg("install").args(packages).arg("-y").spawn()?.wait()?;
+            let _command = process::Command::new("sudo").arg("apk").arg("install").args(packages).spawn()?.wait()?;
             return Ok(());
         },
     }
